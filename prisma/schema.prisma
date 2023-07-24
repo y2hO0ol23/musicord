@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Guild {
+  id        String    @id
+  runtime   Int       @default(0)
+
+  onRandom  Boolean   @default(false)
+  onRepeat  Boolean   @default(false)
+
+  playList  Music[]   @relation("music-list")
+  player    Player[]  @relation("player")
+}
+
+model User {
+  id        String  @id
+  runtime   Int     @default(0)
+}
+
+model Music {
+  id          Int       @id @default(autoincrement())
+
+  guildId     String
+  guild       Guild     @relation("music-list", fields: [guildId], references: [id])
+
+  next        Music[]   @relation("adjacent")
+  back        Music[]   @relation("adjacent")
+
+  url         String
+  description String
+  duration    String
+  thumbnail   String
+
+  state       String    @default("wait")
+}
+
+model Player {
+  id          String    @id
+  guild       Guild     @relation("player", fields: [id], references: [id])
+
+  channelId   String
+  messageId   String
+
+  startTime   DateTime  @default(now())
+  pause       DateTime? @default(now())
+}
